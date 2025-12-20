@@ -1,0 +1,18 @@
+@import "./variables";
+@import "./mixins";
+@import "./fonts";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: $black;
+  color: $green;
+  font-family: Inter, sans-serif;
+}
+
+.section {
+  width: 100%;
+}

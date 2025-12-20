@@ -7,7 +7,9 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@studio-freight/lenis": "^1.0.42",
     "core-js": "^3.8.3",
+    "gsap": "^3.14.2",
     "vue": "^2.6.14"
   },
   "devDependencies": {
