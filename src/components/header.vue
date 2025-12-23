@@ -5,10 +5,10 @@
         v-for="(item, i) in steps"
         :key="i"
         class="nav-item"
-        :class="{ active: i === activeStep }">
+        :class="{ active: i === activeStep }"
+        @click="$emit('step-click', i)">
         {{ item.label }}
 
-        <!-- HORIZONTAL PROGRESS (ONLY ACTIVE) -->
         <span class="progress" :style="progressStyle(i)" />
       </div>
     </nav>
@@ -18,15 +18,16 @@
 <script>
 export default {
   name: "HeaderComp",
+
   props: {
     steps: Array,
     activeStep: Number,
     stepProgress: Number,
-    isAfterLastStep: Boolean,
   },
 
   methods: {
     progressStyle(i) {
+      // menu tidak aktif → tidak ada underline
       if (i !== this.activeStep) {
         return {
           transform: "scaleX(0)",
@@ -34,8 +35,10 @@ export default {
         };
       }
 
+      // SELALU kiri ➜ kanan
       return {
         transform: `scaleX(${this.stepProgress})`,
+        transformOrigin: "left",
         opacity: 1,
       };
     },
@@ -49,7 +52,7 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
-  padding: 2.5rem 2.5rem;
+  padding: 2.5rem;
   z-index: 20;
 }
 
@@ -63,9 +66,10 @@ nav {
   font-family: "Inter", sans-serif;
   font-size: 2.8rem;
   font-weight: 400;
-  letter-spacing: 0.02em;
   text-transform: lowercase;
   opacity: 0.25;
+  cursor: pointer;
+  transition: opacity 0.4s ease;
 }
 
 .nav-item.active {
@@ -79,9 +83,8 @@ nav {
   width: 100%;
   height: 3px;
   background: #c8ff5c;
-  transform-origin: left;
   transform: scaleX(0);
-  opacity: 0;
-  transition: transform 0.15s linear, opacity 0.2s ease;
+  transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 </style>

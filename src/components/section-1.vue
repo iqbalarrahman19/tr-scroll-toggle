@@ -1,78 +1,48 @@
 <template>
-  <section>
-    <!-- ================= DESKTOP / TABLET ================= -->
-    <section class="section-one">
-      <!-- NAVBAR -->
-      <HeaderComp
-        :steps="steps"
-        :activeStep="activeStep"
-        :stepProgress="stepProgress"
-        :isAfterLastStep="isAfterLastStep" />
+  <section class="section-one">
+    <HeaderComp
+      :steps="steps"
+      :activeStep="activeStep"
+      :stepProgress="stepProgress"
+      :direction="direction"
+      :interaction="interaction"
+      :prevStep="prevStep"
+      @step-click="goToStep" />
 
-      <!-- LEFT -->
-      <div class="panel left">
-        <div class="text">
-          <h1>
-            <span v-for="(word, i) in splitTitle" :key="i" class="line">
-              {{ word }}
-            </span>
-          </h1>
-          <p ref="paragraph">{{ steps[activeStep].desc }}</p>
-        </div>
-      </div>
+    <div class="panel left">
+      <div class="text">
+        <h1>
+          <span class="line">
+            {{ steps[activeStep].title }}
+          </span>
+        </h1>
 
-      <!-- RIGHT -->
-      <div class="panel right">
-        <div ref="counter" class="counter">
-          {{ activeStep + 1 }} / {{ steps.length }}
-        </div>
-
-        <div class="media">
-          <!-- progress vertical -->
-          <div class="progress-line">
-            <div class="track"></div>
-            <div class="active"></div>
-          </div>
-
-          <!-- IMAGE -->
-          <div class="image-container">
-            <img
-              ref="mainImage"
-              :src="steps[activeStep].image"
-              class="main-image" />
-          </div>
-
-          <!-- ICON -->
-          <div ref="icon" class="icon">
-            <img :src="steps[activeStep].icon" />
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= MOBILE / ANDROID ================= -->
-    <section class="mobile-stack">
-      <article
-        v-for="(step, i) in steps"
-        :key="'mobile-' + i"
-        class="mobile-card">
-        <div class="mobile-icon">
-          <img :src="step.icon" />
-        </div>
-
-        <h2 class="mobile-title">
-          {{ step.title }}
-        </h2>
-
-        <p class="mobile-desc">
-          {{ step.desc }}
+        <p ref="paragraph">
+          {{ steps[activeStep].desc }}
         </p>
+      </div>
+    </div>
 
-        <div class="mobile-image">
-          <img :src="step.image" />
+    <div class="panel right">
+      <div class="counter">{{ activeStep + 1 }} / {{ steps.length }}</div>
+      <div class="media">
+        <div class="progress-line">
+          <div class="track"></div>
+          <div class="active"></div>
         </div>
-      </article>
-    </section>
+
+        <div class="image-container">
+          <img
+            ref="mainImage"
+            :src="steps[activeStep].image"
+            class="main-image" />
+        </div>
+
+        <div ref="icon" class="icon">
+          <img :src="steps[activeStep].icon" />
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -80,18 +50,22 @@
 import HeaderComp from "./header.vue";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 export default {
-  name: "SectionOne",
   components: { HeaderComp },
 
   data() {
     return {
       activeStep: 0,
+      prevStep: null,
       stepProgress: 0,
-      isAfterLastStep: false,
+      direction: 1,
+      interaction: "scroll",
+      // textMode: "word",
+
       steps: [
         {
           label: "plan",
@@ -118,95 +92,106 @@ export default {
     };
   },
 
-  computed: {
-    splitTitle() {
-      return this.steps[this.activeStep].title.split(" ");
-    },
-  },
+  // computed: {
+  //   splitTitle() {
+  //     return this.steps[this.activeStep].title.split(" ");
+  //   },
+  // },
 
   mounted() {
-    // ⛔ JANGAN aktifkan GSAP di mobile
     if (window.innerWidth <= 768) return;
 
+    this.runIntroAnimation();
+
     ScrollTrigger.create({
-      trigger: this.$el.querySelector(".section-one"),
+      trigger: this.$el,
       start: "top top",
       end: "+=300%",
-      scrub: 0.5,
+      scrub: true,
       pin: true,
 
       onUpdate: (self) => {
         const total = this.steps.length;
         const exact = self.progress * total;
         const index = Math.min(total - 1, Math.floor(exact));
-        const stepProgress = Math.min(1, Math.max(0, exact - index));
+        const local = exact - index;
 
-        // 🔥 DETECT LAST STEP PASSED
-        if (self.progress >= 1) {
-          this.isAfterLastStep = true;
-        } else if (self.direction === -1) {
-          // scroll ke atas → reset flag
-          this.isAfterLastStep = false;
+        this.direction = self.direction; // 1 = down, -1 = up
+        this.interaction = "scroll";
+
+        if (index !== this.activeStep) {
+          this.prevStep = this.activeStep;
         }
 
-        gsap.set(this.$el.querySelector(".progress-line .active"), {
+        this.activeStep = index;
+        this.stepProgress = local;
+
+        gsap.set(".progress-line .active", {
           height: `${self.progress * 100}%`,
         });
 
-        gsap.to(this.$refs.mainImage, {
-          scale: 1.15 - stepProgress * 0.15,
-          duration: 0.3,
-          overwrite: "auto",
+        gsap.set(this.$refs.mainImage, {
+          scale: 1.15 - local * 0.15,
         });
 
-        gsap.to(this.$refs.icon, {
-          scale: 1.25 + stepProgress * 0.15,
-          duration: 0.3,
-          overwrite: "auto",
+        gsap.set(this.$refs.icon, {
+          scale: 1.25 + local * 0.45,
         });
-
-        this.activeStep = index;
-        this.stepProgress = stepProgress;
       },
     });
-
-    this.animateText();
-  },
-
-  watch: {
-    activeStep() {
-      this.$nextTick(this.animateText);
-    },
   },
 
   methods: {
-    animateText() {
-      const lines = this.$el.querySelectorAll(".line");
-      const paragraph = this.$refs.paragraph;
+    runIntroAnimation() {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-      gsap.killTweensOf([lines, paragraph]);
+      gsap.set(".progress-line .active", { height: "0%" });
+      gsap.set(this.$refs.mainImage, { scale: 1.25 });
+      gsap.set(this.$refs.icon, { scale: 0.6 });
+      gsap.set(".line", { yPercent: 120, opacity: 0 });
+      gsap.set(this.$refs.paragraph, { opacity: 0, y: 20 });
 
-      gsap.fromTo(
-        lines,
-        { yPercent: 120 },
-        {
-          yPercent: 0,
-          stagger: 0.06,
-          duration: 0.8,
-          ease: "power3.out",
-        }
-      );
+      tl.to(".progress-line .active", {
+        height: `${(1 / this.steps.length) * 100}%`,
+        duration: 1,
+      })
+        .to(this.$refs.mainImage, { scale: 1, duration: 1 }, "<")
+        .to(this.$refs.icon, { scale: 1.35, duration: 0.8 }, "<0.1")
+        .to(
+          ".line",
+          { yPercent: 0, stagger: 0.06, duration: 0.8, opacity: 1 },
+          "<0.2"
+        )
+        .to(this.$refs.paragraph, { opacity: 1, y: 0, duration: 0.6 }, "<0.1");
 
-      gsap.fromTo(
-        paragraph,
-        { y: 20 },
-        {
-          y: 0,
-          duration: 0.6,
-          delay: 0.2,
-          ease: "power3.out",
-        }
-      );
+      tl.eventCallback("onUpdate", () => {
+        this.stepProgress = tl.progress();
+      });
+
+      tl.eventCallback("onComplete", () => {
+        this.stepProgress = 1;
+      });
+    },
+
+    goToStep(index) {
+      const total = this.steps.length;
+      const target = (index + 1) / total - 0.001;
+
+      this.prevStep = this.activeStep;
+      this.activeStep = index;
+      this.direction = index > this.prevStep ? 1 : -1;
+      this.interaction = "click";
+
+      gsap.to(window, {
+        scrollTo: {
+          y:
+            ScrollTrigger.getAll()[0].start +
+            (ScrollTrigger.getAll()[0].end - ScrollTrigger.getAll()[0].start) *
+              target,
+        },
+        duration: 1.2,
+        ease: "power3.inOut",
+      });
     },
   },
 };
@@ -312,7 +297,7 @@ p {
 .icon {
   position: absolute;
   top: 50%;
-  right: 40%;
+  right: 30%;
   width: 110px;
   transform: translateY(-50%);
 }
