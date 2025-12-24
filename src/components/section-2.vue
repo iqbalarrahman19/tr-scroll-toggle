@@ -40,17 +40,14 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Global GSAP defaults (smooth scrub)
-gsap.defaults({
-  ease: "none",
-});
-
 export default {
   name: "SectionTwo",
 
   data() {
     return {
       activeIndex: 0,
+      st: null,
+
       items: [
         {
           label: "plan",
@@ -69,114 +66,120 @@ export default {
   },
 
   mounted() {
-    // Respect reduced motion preference
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const words = this.$refs.words;
-    const images = this.$refs.images;
-    const progress = this.$refs.progress;
-    const total = this.items.length;
-
-    /* ================= INITIAL STATE ================= */
-
-    // TEXT
-    gsap.set(words, {
-      xPercent: -50,
-      yPercent: 120,
-    });
-    gsap.set(words[0], { yPercent: 0 });
-
-    // IMAGES
-    gsap.set(images, {
-      scale: 0,
-      transformOrigin: "50% 50%",
-    });
-
-    // PROGRESS BAR
-    gsap.set(progress, {
-      scaleX: 0,
-      transformOrigin: "left",
-    });
-
-    /* ================= TIMELINE ================= */
-
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: this.$el,
-        start: "top top",
-        end: `+=${total * 120}%`,
-        scrub: true,
-        pin: true,
-        anticipatePin: 1, // Safari & mobile stability
-        onUpdate: (self) => {
-          const index = Math.min(total - 1, Math.floor(self.progress * total));
-          this.activeIndex = index;
-        },
-      },
-    });
-
-    /* ================= PROGRESS (GLOBAL) ================= */
-    tl.to(
-      progress,
-      {
-        scaleX: 1,
-        duration: total,
-      },
-      0
-    );
-
-    /* ================= STEPS ================= */
-
-    this.items.forEach((_, i) => {
-      const imageStart = i;
-      const imageFull = i + 0.7;
-      const nextText = i + 1;
-
-      // IMAGE SCALE IN
-      tl.fromTo(
-        images[i],
-        { scale: 0 },
-        { scale: 1, duration: 0.7 },
-        imageStart
-      );
-
-      // TEXT TRANSITION
-      if (nextText < total) {
-        // Current text out
-        tl.to(
-          words[i],
-          {
-            yPercent: -120,
-            duration: 0.3,
-            ease: "power2.out",
-          },
-          imageFull
-        );
-
-        // Next text in
-        tl.to(
-          words[nextText],
-          {
-            yPercent: 0,
-            duration: 0.4,
-            ease: "power3.out",
-            onStart: () => (this.activeIndex = nextText),
-          },
-          imageFull
-        );
-      }
+    this.$nextTick(() => {
+      this.initAnimation();
     });
   },
 
-  beforeDestroy() {
-    // Clean up ScrollTrigger (SPA safety)
-    ScrollTrigger.getAll().forEach((t) => t.kill());
+  beforeUnmount() {
+    if (this.st) this.st.kill();
+  },
+
+  methods: {
+    initAnimation() {
+      const words = this.$refs.words;
+      const images = this.$refs.images;
+      const progress = this.$refs.progress;
+      const total = this.items.length;
+
+      /* ================= INITIAL STATE ================= */
+
+      gsap.set(words, {
+        xPercent: -50,
+        yPercent: 120,
+      });
+      gsap.set(words[0], { yPercent: 0 });
+
+      gsap.set(images, {
+        scale: 0,
+        transformOrigin: "50% 50%",
+      });
+
+      gsap.set(progress, {
+        scaleX: 0,
+        transformOrigin: "left",
+      });
+
+      /* ================= TIMELINE ================= */
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: this.$el,
+          start: "top top",
+          end: () => `+=${total * 120}%`,
+          scrub: 1,
+          pin: true,
+          anticipatePin: 1,
+
+          onUpdate: (self) => {
+            const index = Math.min(
+              total - 1,
+              Math.floor(self.progress * total)
+            );
+            this.activeIndex = index;
+          },
+        },
+      });
+
+      this.st = tl.scrollTrigger;
+
+      /* ================= PROGRESS BAR ================= */
+      tl.to(
+        progress,
+        {
+          scaleX: 1,
+          duration: total,
+          ease: "none",
+        },
+        0
+      );
+
+      /* ================= STEPS ================= */
+      this.items.forEach((_, i) => {
+        const imageIn = i;
+        const imageFull = i + 0.7;
+        const nextText = i + 1;
+
+        // IMAGE IN
+        tl.fromTo(
+          images[i],
+          { scale: 0 },
+          { scale: 1, duration: 0.7, ease: "power3.out" },
+          imageIn
+        );
+
+        if (nextText < total) {
+          // TEXT OUT
+          tl.to(
+            words[i],
+            {
+              yPercent: -120,
+              duration: 0.3,
+              ease: "power2.out",
+            },
+            imageFull
+          );
+
+          // TEXT IN
+          tl.to(
+            words[nextText],
+            {
+              yPercent: 0,
+              duration: 0.4,
+              ease: "power3.out",
+            },
+            imageFull
+          );
+        }
+      });
+    },
   },
 };
 </script>
 
 <style scoped lang="scss">
-/* ================= ROOT ================= */
 .scroll-toggle {
   height: 100vh;
   background: radial-gradient(circle at center, #101a08 0%, #0c1408 70%);
@@ -185,7 +188,7 @@ export default {
   overflow: hidden;
 }
 
-/* ================= PERFORMANCE HINT ================= */
+/* PERFORMANCE */
 .word,
 .image,
 .progress-active {
@@ -196,8 +199,7 @@ export default {
 .top-progress {
   position: absolute;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
   width: 100%;
   height: 3px;
   z-index: 10;
@@ -206,7 +208,7 @@ export default {
 .progress-track {
   position: absolute;
   inset: 0;
-  background: rgba(200, 255, 92, 0.2);
+  background: rgba(200, 255, 92, 0.15);
   opacity: 0;
 }
 
@@ -214,6 +216,7 @@ export default {
   position: absolute;
   inset: 0;
   background: #c6fb50;
+  transform-origin: left;
 }
 
 /* ================= CENTER ================= */
@@ -281,37 +284,6 @@ export default {
   cursor: pointer;
   z-index: 10;
   background: transparent;
-}
-
-/* ================= TABLET RESPONSIVE ================= */
-@media (min-width: 768px) and (max-width: 1024px) {
-  .inner {
-    padding: 0 3rem;
-  }
-
-  /* Text container lebih pendek agar tidak kepotong */
-  .words {
-    height: clamp(10rem, 28vw, 10rem);
-  }
-
-  /* Ukuran font tetap besar tapi lebih stabil */
-  .word {
-    font-size: clamp(5rem, 14vw, 11rem);
-  }
-
-  /* Counter lebih rapat */
-  .counter {
-    margin-bottom: 2rem;
-    font-size: 1.5rem;
-  }
-
-  /* Button naik sedikit agar tidak terlalu bawah */
-  .button {
-    bottom: 3rem;
-    padding: 0.9rem 1.8rem;
-    font-size: 0.95rem;
-    margin-bottom: 7rem;
-  }
 }
 
 /* ================= RESPONSIVE ================= */

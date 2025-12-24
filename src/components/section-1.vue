@@ -64,7 +64,10 @@ export default {
       stepProgress: 0,
       direction: 1,
       interaction: "scroll",
-      // textMode: "word",
+      st: null,
+
+      // 🔥 LOCK SAAT CLICK
+      isClicking: false,
 
       steps: [
         {
@@ -92,84 +95,77 @@ export default {
     };
   },
 
-  // computed: {
-  //   splitTitle() {
-  //     return this.steps[this.activeStep].title.split(" ");
-  //   },
-  // },
-
   mounted() {
     if (window.innerWidth <= 768) return;
 
-    this.runIntroAnimation();
-
-    ScrollTrigger.create({
+    // ===============================
+    // 1️⃣ BUAT ScrollTrigger
+    // ===============================
+    this.st = ScrollTrigger.create({
       trigger: this.$el,
       start: "top top",
       end: "+=300%",
       scrub: true,
       pin: true,
-
       onUpdate: (self) => {
+        this.updateByScroll(self);
+        if (this.interaction === "click") return;
+
         const total = this.steps.length;
         const exact = self.progress * total;
         const index = Math.min(total - 1, Math.floor(exact));
         const local = exact - index;
 
-        this.direction = self.direction; // 1 = down, -1 = up
-        this.interaction = "scroll";
-
-        if (index !== this.activeStep) {
-          this.prevStep = this.activeStep;
-        }
-
+        this.direction = self.direction;
         this.activeStep = index;
         this.stepProgress = local;
-
-        gsap.set(".progress-line .active", {
-          height: `${self.progress * 100}%`,
-        });
-
-        gsap.set(this.$refs.mainImage, {
-          scale: 1.15 - local * 0.15,
-        });
-
-        gsap.set(this.$refs.icon, {
-          scale: 1.25 + local * 0.45,
-        });
       },
     });
+
+    ScrollTrigger.refresh();
+
+    // ===============================
+    // 2️⃣ RESTORE STEP (WEBFLOW STYLE)
+    // ===============================
+    const savedStep = sessionStorage.getItem("wf-step");
+    if (savedStep !== null) {
+      this.goToStep(Number(savedStep));
+    }
   },
 
   methods: {
-    runIntroAnimation() {
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    // ===============================
+    // UPDATE SAAT SCROLL
+    // ===============================
+    updateByScroll(self) {
+      const total = this.steps.length;
+      const exact = self.progress * total;
+      const index = Math.min(total - 1, Math.floor(exact));
+      const local = exact - index;
 
-      gsap.set(".progress-line .active", { height: "0%" });
-      gsap.set(this.$refs.mainImage, { scale: 1.25 });
-      gsap.set(this.$refs.icon, { scale: 0.6 });
-      gsap.set(".line", { yPercent: 120, opacity: 0 });
-      gsap.set(this.$refs.paragraph, { opacity: 0, y: 20 });
+      this.direction = self.direction;
+      this.interaction = "scroll";
 
-      tl.to(".progress-line .active", {
-        height: `${(1 / this.steps.length) * 100}%`,
-        duration: 1,
-      })
-        .to(this.$refs.mainImage, { scale: 1, duration: 1 }, "<")
-        .to(this.$refs.icon, { scale: 1.35, duration: 0.8 }, "<0.1")
-        .to(
-          ".line",
-          { yPercent: 0, stagger: 0.06, duration: 0.8, opacity: 1 },
-          "<0.2"
-        )
-        .to(this.$refs.paragraph, { opacity: 1, y: 0, duration: 0.6 }, "<0.1");
+      if (index !== this.activeStep) {
+        this.prevStep = this.activeStep;
+      }
 
-      tl.eventCallback("onUpdate", () => {
-        this.stepProgress = tl.progress();
+      this.activeStep = index;
+      this.stepProgress = local;
+
+      // 🔥 SIMPAN STEP (KUNCI WEBFLOW)
+      sessionStorage.setItem("wf-step", index);
+
+      gsap.set(".progress-line .active", {
+        height: `${self.progress * 100}%`,
       });
 
-      tl.eventCallback("onComplete", () => {
-        this.stepProgress = 1;
+      gsap.set(this.$refs.mainImage, {
+        scale: 1.15 - local * 0.15,
+      });
+
+      gsap.set(this.$refs.icon, {
+        scale: 1.25 + local * 0.45,
       });
     },
 
@@ -180,6 +176,9 @@ export default {
       this.prevStep = this.activeStep;
       this.activeStep = index;
       this.direction = index > this.prevStep ? 1 : -1;
+
+      // 🔥 reset progress
+      this.stepProgress = 0;
       this.interaction = "click";
 
       gsap.to(window, {
@@ -191,6 +190,11 @@ export default {
         },
         duration: 1.2,
         ease: "power3.inOut",
+
+        onComplete: () => {
+          // 🔓 balik ke scroll mode
+          this.interaction = "scroll";
+        },
       });
     },
   },
@@ -198,6 +202,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
+/* STYLE TIDAK DIUBAH */
 .section-one {
   height: 100vh;
   display: flex;
