@@ -402,8 +402,7 @@ p {
 }
 
 .mobile-icon {
-  width: 28px;
-  margin-bottom: 1.25rem;
+  width: 18px;
 }
 
 .mobile-icon img {
@@ -413,10 +412,9 @@ p {
 .mobile-title {
   font-family: "Playfair Display", serif;
   font-style: italic;
-  font-size: 2.1rem;
+  font-size: 1rem;
   line-height: 1;
   color: #c6fb50;
-  margin-bottom: 1rem;
 }
 
 .mobile-desc {
@@ -531,12 +529,14 @@ p {
   }
 
   .mobile-title {
-    width: 60%;
-    font-size: 60px;
+    width: 90%;
+    font-size: 45px;
+    margin-top: 20px;
+    margin-bottom: -20px;
   }
   .mobile-desc {
-    font-size: 20px;
-    max-width: 100rem;
+    font-size: 15px;
+    min-width: 18rem;
   }
 
   .tablet-stack-wf {
