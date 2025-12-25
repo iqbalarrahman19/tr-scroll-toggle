@@ -1,49 +1,90 @@
 <template>
-  <section class="section-one">
-    <HeaderComp
-      :steps="steps"
-      :activeStep="activeStep"
-      :stepProgress="stepProgress"
-      :direction="direction"
-      :interaction="interaction"
-      :prevStep="prevStep"
-      @step-click="goToStep" />
+  <div>
+    <section class="section-one">
+      <HeaderComp
+        :steps="steps"
+        :activeStep="activeStep"
+        :stepProgress="stepProgress"
+        :direction="direction"
+        :interaction="interaction"
+        :prevStep="prevStep"
+        @step-click="goToStep" />
 
-    <div class="panel left">
-      <div class="text">
-        <h1>
-          <span class="line">
-            {{ steps[activeStep].title }}
-          </span>
-        </h1>
+      <div class="panel left">
+        <div class="text">
+          <h1>
+            <span class="line">
+              {{ steps[activeStep].title }}
+            </span>
+          </h1>
 
-        <p ref="paragraph">
-          {{ steps[activeStep].desc }}
+          <p ref="paragraph">
+            {{ steps[activeStep].desc }}
+          </p>
+        </div>
+      </div>
+
+      <div class="panel right">
+        <div class="counter">{{ activeStep + 1 }} / {{ steps.length }}</div>
+        <div class="media">
+          <div class="progress-line">
+            <div class="track"></div>
+            <div class="active"></div>
+          </div>
+
+          <div class="image-container">
+            <img ref="mainImage" :src="currentImage" class="main-image" />
+          </div>
+
+          <div ref="icon" class="icon">
+            <img :src="steps[activeStep].icon" />
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ================= MOBILE STACK ================= -->
+    <section class="mobile-stack">
+      <div v-for="(step, i) in steps" :key="i" class="mobile-card">
+        <div class="mobile-icon">
+          <img :src="step.icon" />
+        </div>
+
+        <h2 class="mobile-title">
+          {{ step.title }}
+        </h2>
+
+        <p class="mobile-desc">
+          {{ step.desc }}
         </p>
-      </div>
-    </div>
 
-    <div class="panel right">
-      <div class="counter">{{ activeStep + 1 }} / {{ steps.length }}</div>
-      <div class="media">
-        <div class="progress-line">
-          <div class="track"></div>
-          <div class="active"></div>
-        </div>
-
-        <div class="image-container">
-          <img
-            ref="mainImage"
-            :src="steps[activeStep].image"
-            class="main-image" />
-        </div>
-
-        <div ref="icon" class="icon">
-          <img :src="steps[activeStep].icon" />
+        <div class="mobile-image">
+          <img :src="step.image.mobile" />
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+    <!-- ================= TABLET STACK ================= -->
+    <section class="tablet-stack-wf">
+      <div v-for="(step, i) in steps" :key="i" class="tablet-wf-card">
+        <div class="tablet-wf-text">
+          <div class="tablet-wf-icon">
+            <img :src="step.icon" />
+          </div>
+
+          <h2 class="tablet-wf-title">
+            {{ step.title }}
+          </h2>
+
+          <p class="tablet-wf-desc">
+            {{ step.desc }}
+          </p>
+        </div>
+
+        <div class="tablet-wf-image">
+          <img :src="step.image.tablet" />
+        </div>
+      </div>
+    </section>
+  </div>
 </template>
 
 <script>
@@ -74,29 +115,71 @@ export default {
           label: "plan",
           title: "The sitemap of the experience",
           desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam urna tempor pulvinar vivamus fringilla lacus nec metus bibendum egestas.",
-          image: require("@/assets/images/imgi_2_638e3f15b3ed3463ebe6038b_pexels-wendy-wei-14397945.jpg"),
+          image: {
+            desktop: require("@/assets/images/imgi_2_638e3f15b3ed3463ebe6038b_pexels-wendy-wei-14397945.jpg"),
+            tablet: require("@/assets/images/imgi_13_638e3f15b3ed3463ebe6038b_pexels-wendy-wei-14397945-p-800.jpg"),
+            mobile: require("@/assets/images/imgi_16_638e3f15b3ed3463ebe6038b_pexels-wendy-wei-14397945-p-2600.jpg"),
+          },
           icon: require("@/assets/images/imgi_1_638e411bd0e9dd70ed4f30e8_plan.svg"),
         },
         {
           label: "design",
           title: "Time to paint the room walls",
           desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam urna tempor pulvinar vivamus fringilla.",
-          image: require("@/assets/images/imgi_4_638e4092e9575c0f9629ae01_walls.jpg"),
+          image: {
+            desktop: require("@/assets/images/imgi_4_638e4092e9575c0f9629ae01_walls.jpg"),
+            tablet: require("@/assets/images/imgi_18_638e4092e9575c0f9629ae01_walls-p-800.jpg"),
+            mobile: require("@/assets/images/imgi_20_638e4092e9575c0f9629ae01_walls-p-1600.jpg"),
+          },
           icon: require("@/assets/images/imgi_3_638e3f259cd4ab766024d0e3_icon.svg"),
         },
         {
           label: "build",
           title: "Let the code bring it alive",
           desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam.",
-          image: require("@/assets/images/imgi_6_638e45c467fd8f44a5687f97_pexels-cottonbro-studio-5474032.jpg"),
+          image: {
+            desktop: require("@/assets/images/imgi_6_638e45c467fd8f44a5687f97_pexels-cottonbro-studio-5474032.jpg"),
+            tablet: require("@/assets/images/imgi_21_638e45c467fd8f44a5687f97_pexels-cottonbro-studio-5474032-p-800.jpg"),
+            mobile: require("@/assets/images/imgi_24_638e45c467fd8f44a5687f97_pexels-cottonbro-studio-5474032-p-2600.jpg"),
+          },
           icon: require("@/assets/images/imgi_5_638e45c4ee2e7c91334d22ba_code.svg"),
         },
       ],
     };
   },
 
+  computed: {
+    currentImage() {
+      const img = this.steps[this.activeStep].image;
+
+      if (window.innerWidth <= 768) {
+        return img.mobile;
+      }
+
+      if (window.innerWidth <= 1024) {
+        return img.tablet;
+      }
+
+      return img.desktop;
+    },
+    currentIcon() {
+      const icon = this.steps[this.activeStep].icon;
+
+      if (window.innerWidth <= 768) {
+        return icon.mobile;
+      }
+
+      if (window.innerWidth <= 1024) {
+        return icon.tablet;
+      }
+
+      return icon.desktop;
+    },
+  },
+
   mounted() {
     if (window.innerWidth <= 768) return;
+    if (window.innerWidth <= 1024) return;
 
     // ===============================
     // 1️⃣ BUAT ScrollTrigger
@@ -311,16 +394,16 @@ p {
 .mobile-stack {
   display: none;
   background: #0c1408;
-  padding: 2rem 1.25rem;
+  padding: 2.5rem 1.5rem;
 }
 
 .mobile-card {
-  margin-bottom: 4rem;
+  margin-bottom: 5rem;
 }
 
 .mobile-icon {
   width: 28px;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .mobile-icon img {
@@ -330,7 +413,7 @@ p {
 .mobile-title {
   font-family: "Playfair Display", serif;
   font-style: italic;
-  font-size: 2rem;
+  font-size: 2.1rem;
   line-height: 1;
   color: #c6fb50;
   margin-bottom: 1rem;
@@ -341,25 +424,122 @@ p {
   line-height: 1.6;
   color: #c6fb50;
   opacity: 0.9;
-  margin-bottom: 1.5rem;
-  width: 17rem;
+  margin-bottom: 1.75rem;
+  max-width: 18rem;
 }
 
 .mobile-image {
-  border-radius: 12px;
-  max-height: 200px;
+  border-radius: 14px;
   overflow: hidden;
 }
 
 .mobile-image img {
   width: 100%;
   display: block;
-  object-fit: contain;
+  object-fit: cover;
+  height: 20rem;
 }
 
-/* ================= BREAKPOINT ================= */
+/* ================= TABLET STACK ================= */
+.tablet-stack-wf {
+  display: none;
+  background: #0c1408;
+  padding: 3.5rem 0rem;
+}
+
+.tablet-wf-card {
+  margin-bottom: 7rem;
+}
+
+.tablet-wf-text {
+  width: 90%;
+  margin: 0 auto 2rem auto;
+}
+
+.tablet-wf-icon {
+  width: 60px;
+}
+
+.tablet-wf-icon img {
+  width: 100%;
+}
+
+.tablet-wf-title {
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+  font-size: 64px;
+  line-height: 0.9;
+  font-weight: 300;
+  color: #c6fb50;
+  width: 25rem;
+}
+
+.tablet-wf-desc {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #c6fb50;
+  max-width: 26rem;
+  opacity: 0.9;
+}
+
+/* IMAGE FULL WIDTH */
+.tablet-wf-image {
+  width: 100%;
+  overflow: hidden;
+}
+
+.tablet-wf-image img {
+  width: 46rem;
+  height: 26rem;
+  display: block;
+  object-fit: cover;
+  margin-left: 2rem;
+  margin-right: 2rem;
+}
+
+/* ================= DESKTOP ================= */
+@media (min-width: 1025px) {
+  .section-one {
+    display: flex;
+  }
+}
+
+/* ================= TABLET ================= */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .section-one {
+    display: none;
+  }
+
+  .mobile-stack {
+    display: none;
+  }
+
+  .tablet-stack-wf {
+    display: block;
+  }
+}
+
+/* ================= MOBILE ================= */
 @media (max-width: 768px) {
   .section-one {
+    display: none;
+  }
+
+  .mobile-icon {
+    scale: 2;
+    margin-left: 1rem;
+  }
+
+  .mobile-title {
+    width: 60%;
+    font-size: 60px;
+  }
+  .mobile-desc {
+    font-size: 20px;
+    max-width: 100rem;
+  }
+
+  .tablet-stack-wf {
     display: none;
   }
 

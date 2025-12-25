@@ -201,7 +201,7 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
-  height: 3px;
+  height: 4px;
   z-index: 10;
 }
 
@@ -239,7 +239,7 @@ export default {
 .words {
   position: relative;
   width: 100%;
-  height: clamp(8rem, 30vw, 16rem);
+  height: clamp(8rem, 20vw, 16rem);
   overflow: hidden;
   z-index: 10;
 }
@@ -287,7 +287,7 @@ export default {
 }
 
 /* ================= RESPONSIVE ================= */
-@media (max-width: 768px) {
+@media (max-width: 1024px) and (min-width: 769px) {
   .button {
     bottom: 2rem;
     padding: 0.75rem 1.5rem;
@@ -296,6 +296,10 @@ export default {
 
   .counter {
     margin-bottom: 1.5rem;
+  }
+
+  .progress-track {
+    opacity: 0;
   }
 }
 </style>
