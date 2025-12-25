@@ -295,7 +295,7 @@ export default {
   }
 
   .words {
-    height: clamp(8rem, 20vw, 14rem);
+    height: clamp(8rem, 20vw, 13rem);
   }
 
   .counter {
