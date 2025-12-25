@@ -239,7 +239,7 @@ export default {
 .words {
   position: relative;
   width: 100%;
-  height: clamp(8rem, 20vw, 16rem);
+  height: clamp(8rem, 20vw, 14rem);
   overflow: hidden;
   z-index: 10;
 }
