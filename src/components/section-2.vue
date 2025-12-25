@@ -289,13 +289,13 @@ export default {
 /* ================= RESPONSIVE ================= */
 @media (max-width: 769px) {
   .button {
-    bottom: 2rem;
+    bottom: 19rem;
     padding: 0.75rem 1.5rem;
     font-size: 0.9rem;
   }
 
   .words {
-    height: clamp(8rem, 20vw, 13rem);
+    height: clamp(7rem, 20vw, 8rem);
   }
 
   .counter {
