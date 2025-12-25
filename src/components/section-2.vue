@@ -289,7 +289,7 @@ export default {
 /* ================= RESPONSIVE ================= */
 @media (max-width: 769px) {
   .button {
-    bottom: 19rem;
+    bottom: 16rem;
     padding: 0.75rem 1.5rem;
     font-size: 0.9rem;
   }
