@@ -239,7 +239,7 @@ export default {
 .words {
   position: relative;
   width: 100%;
-  height: clamp(8rem, 20vw, 14rem);
+  height: clamp(8rem, 20vw, 16rem);
   overflow: hidden;
   z-index: 10;
 }
@@ -287,11 +287,15 @@ export default {
 }
 
 /* ================= RESPONSIVE ================= */
-@media (max-width: 1024px) and (min-width: 769px) {
+@media (max-width: 769px) {
   .button {
     bottom: 2rem;
     padding: 0.75rem 1.5rem;
     font-size: 0.9rem;
+  }
+
+  .words {
+    height: clamp(8rem, 20vw, 14rem);
   }
 
   .counter {
