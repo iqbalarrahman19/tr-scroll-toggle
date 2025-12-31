@@ -27,15 +27,14 @@ export default {
 
   methods: {
     progressStyle(i) {
-      // menu tidak aktif → tidak ada underline
       if (i !== this.activeStep) {
+        // step sesudah → kosong
         return {
           transform: "scaleX(0)",
           opacity: 0,
         };
       }
 
-      // SELALU kiri ➜ kanan
       return {
         transform: `scaleX(${this.stepProgress})`,
         transformOrigin: "left",
@@ -84,7 +83,7 @@ nav {
   height: 3px;
   background: #c8ff5c;
   transform: scaleX(0);
-  transform-origin: right;
+  transform-origin: left;
   transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 </style>

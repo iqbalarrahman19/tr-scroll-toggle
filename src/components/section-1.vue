@@ -5,9 +5,6 @@
         :steps="steps"
         :activeStep="activeStep"
         :stepProgress="stepProgress"
-        :direction="direction"
-        :interaction="interaction"
-        :prevStep="prevStep"
         @step-click="goToStep" />
 
       <div class="panel left">
@@ -107,9 +104,6 @@ export default {
       interaction: "scroll",
       st: null,
 
-      // 🔥 LOCK SAAT CLICK
-      isClicking: false,
-
       steps: [
         {
           label: "plan",
@@ -151,29 +145,12 @@ export default {
   computed: {
     currentImage() {
       const img = this.steps[this.activeStep].image;
-
-      if (window.innerWidth <= 768) {
-        return img.mobile;
-      }
-
-      if (window.innerWidth <= 1024) {
-        return img.tablet;
-      }
-
+      if (window.innerWidth <= 768) return img.mobile;
+      if (window.innerWidth <= 1024) return img.tablet;
       return img.desktop;
     },
     currentIcon() {
-      const icon = this.steps[this.activeStep].icon;
-
-      if (window.innerWidth <= 768) {
-        return icon.mobile;
-      }
-
-      if (window.innerWidth <= 1024) {
-        return icon.tablet;
-      }
-
-      return icon.desktop;
+      this.steps[this.activeStep].icon;
     },
   },
 
@@ -193,15 +170,6 @@ export default {
       onUpdate: (self) => {
         this.updateByScroll(self);
         if (this.interaction === "click") return;
-
-        const total = this.steps.length;
-        const exact = self.progress * total;
-        const index = Math.min(total - 1, Math.floor(exact));
-        const local = exact - index;
-
-        this.direction = self.direction;
-        this.activeStep = index;
-        this.stepProgress = local;
       },
     });
 
@@ -253,16 +221,19 @@ export default {
     },
 
     goToStep(index) {
+      if (!this.st) return;
+
+      this.interaction = "click"; // 🔒 LOCK DULU
+
       const total = this.steps.length;
       const target = (index + 1) / total - 0.001;
 
       this.prevStep = this.activeStep;
-      this.activeStep = index;
       this.direction = index > this.prevStep ? 1 : -1;
+      this.activeStep = index;
 
       // 🔥 reset progress
       this.stepProgress = 0;
-      this.interaction = "click";
 
       gsap.to(window, {
         scrollTo: {
@@ -273,7 +244,6 @@ export default {
         },
         duration: 1.2,
         ease: "power3.inOut",
-
         onComplete: () => {
           // 🔓 balik ke scroll mode
           this.interaction = "scroll";
