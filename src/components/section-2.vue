@@ -1,16 +1,21 @@
 <template>
+  <!-- ================= SECTION 2 : SCROLL TOGGLE ================= -->
   <section class="scroll-toggle">
     <!-- ================= TOP PROGRESS ================= -->
+    <!-- progress horizontal di bagian atas -->
     <div class="top-progress">
       <div class="progress-track"></div>
+      <!-- progress-active akan di-scale via GSAP -->
       <div class="progress-active" ref="progress"></div>
     </div>
 
     <div class="inner">
       <!-- ================= COUNTER ================= -->
+      <!-- index aktif + total item -->
       <div class="counter">{{ activeIndex + 1 }} — {{ items.length }}</div>
 
       <!-- ================= WORDS ================= -->
+      <!-- semua text ditumpuk, animasi naik-turun -->
       <div class="words">
         <h1 v-for="(item, i) in items" :key="i" class="word" ref="words">
           {{ item.label }}
@@ -18,6 +23,7 @@
       </div>
 
       <!-- ================= IMAGES ================= -->
+      <!-- semua image overlap, scale dikontrol timeline -->
       <div class="image-wrap">
         <img
           v-for="(item, i) in items"
@@ -29,6 +35,7 @@
           decoding="async" />
       </div>
 
+      <!-- CTA -->
       <button class="button">Learn More</button>
     </div>
   </section>
@@ -38,6 +45,7 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+// register ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
 
 export default {
@@ -45,9 +53,13 @@ export default {
 
   data() {
     return {
+      // index item yang sedang aktif (berdasarkan scroll)
       activeIndex: 0,
+
+      // simpan instance ScrollTrigger (buat cleanup)
       st: null,
 
+      // data konten
       items: [
         {
           label: "plan",
@@ -66,53 +78,63 @@ export default {
   },
 
   mounted() {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // hormati prefers-reduced-motion
+    // if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
+    // pastikan DOM & refs sudah siap
     this.$nextTick(() => {
       this.initAnimation();
     });
   },
 
   beforeUnmount() {
+    // cleanup ScrollTrigger saat component dihancurkan
     if (this.st) this.st.kill();
   },
 
   methods: {
     initAnimation() {
+      // refs element
       const words = this.$refs.words;
       const images = this.$refs.images;
       const progress = this.$refs.progress;
       const total = this.items.length;
 
       /* ================= INITIAL STATE ================= */
-
+      // posisi awal semua text di bawah (hidden)
       gsap.set(words, {
         xPercent: -50,
         yPercent: 120,
       });
+
+      // text pertama langsung terlihat
       gsap.set(words[0], { yPercent: 0 });
 
+      // semua image scale 0 (hidden)
       gsap.set(images, {
         scale: 0,
         transformOrigin: "50% 50%",
       });
 
+      // progress bar mulai dari 0
       gsap.set(progress, {
         scaleX: 0,
         transformOrigin: "left",
       });
 
       /* ================= TIMELINE ================= */
-
+      // timeline utama yang dikontrol scroll
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: this.$el,
           start: "top top",
+          // panjang scroll = jumlah item
           end: () => `+=${total * 120}%`,
           scrub: 1,
           pin: true,
           anticipatePin: 1,
 
+          // update index aktif saat scroll
           onUpdate: (self) => {
             const index = Math.min(
               total - 1,
@@ -123,9 +145,11 @@ export default {
         },
       });
 
+      // simpan ScrollTrigger instance
       this.st = tl.scrollTrigger;
 
       /* ================= PROGRESS BAR ================= */
+      // progress bar horizontal penuh sepanjang timeline
       tl.to(
         progress,
         {
@@ -133,16 +157,17 @@ export default {
           duration: total,
           ease: "none",
         },
-        0
+        0 // mulai dari awal timeline
       );
 
       /* ================= STEPS ================= */
+      // loop tiap item untuk atur image & text
       this.items.forEach((_, i) => {
-        const imageIn = i;
-        const imageFull = i + 0.7;
-        const nextText = i + 1;
+        const imageIn = i; // waktu image masuk
+        const imageFull = i + 0.7; // saat image sudah full
+        const nextText = i + 1; // index text berikutnya
 
-        // IMAGE IN
+        // IMAGE IN (scale up)
         tl.fromTo(
           images[i],
           { scale: 0 },
@@ -151,7 +176,7 @@ export default {
         );
 
         if (nextText < total) {
-          // TEXT OUT
+          // TEXT KELUAR (yang aktif)
           tl.to(
             words[i],
             {
@@ -162,7 +187,7 @@ export default {
             imageFull
           );
 
-          // TEXT IN
+          // TEXT MASUK (berikutnya)
           tl.to(
             words[nextText],
             {

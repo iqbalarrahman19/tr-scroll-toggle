@@ -1,45 +1,66 @@
 <template>
   <div>
+    <!-- ================= DESKTOP SCROLL EXPERIENCE ================= -->
     <section class="section-one">
+      <!-- HEADER NAV (STEP INDICATOR) -->
+      <!--
+        steps        : data step (label, title, dll)
+        activeStep  : step yang sedang aktif
+        stepProgress: progress lokal 0–1 per step
+        step-click  : emit saat user klik menu
+      -->
       <HeaderComp
         :steps="steps"
         :activeStep="activeStep"
         :stepProgress="stepProgress"
+        :direction="direction"
         @step-click="goToStep" />
 
+      <!-- PANEL KIRI (TEXT CONTENT) -->
       <div class="panel left">
         <div class="text">
           <h1>
+            <!-- title berubah sesuai activeStep -->
             <span class="line">
               {{ steps[activeStep].title }}
             </span>
           </h1>
 
+          <!-- description -->
           <p ref="paragraph">
             {{ steps[activeStep].desc }}
           </p>
         </div>
       </div>
 
+      <!-- PANEL KANAN (MEDIA & PROGRESS) -->
       <div class="panel right">
+        <!-- counter step -->
         <div class="counter">{{ activeStep + 1 }} / {{ steps.length }}</div>
+
         <div class="media">
+          <!-- VERTICAL PROGRESS LINE -->
           <div class="progress-line">
             <div class="track"></div>
+            <!-- tinggi .active di-set via GSAP -->
             <div class="active"></div>
           </div>
 
+          <!-- IMAGE -->
           <div class="image-container">
             <img ref="mainImage" :src="currentImage" class="main-image" />
           </div>
 
+          <!-- ICON -->
           <div ref="icon" class="icon">
             <img :src="steps[activeStep].icon" />
           </div>
         </div>
       </div>
     </section>
+
     <!-- ================= MOBILE STACK ================= -->
+    <!-- Mode non-scroll, konten ditumpuk -->
     <section class="mobile-stack">
       <div v-for="(step, i) in steps" :key="i" class="mobile-card">
         <div class="mobile-icon">
@@ -59,7 +80,9 @@
         </div>
       </div>
     </section>
+
     <!-- ================= TABLET STACK ================= -->
+    <!-- Mirip Webflow tablet behavior -->
     <section class="tablet-stack-wf">
       <div v-for="(step, i) in steps" :key="i" class="tablet-wf-card">
         <div class="tablet-wf-text">
@@ -90,6 +113,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
+// register plugin GSAP
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 export default {
@@ -97,18 +121,30 @@ export default {
 
   data() {
     return {
+      // step yang aktif saat ini
       activeStep: 0,
+
+      // step sebelumnya (dipakai buat arah animasi)
       prevStep: null,
+
+      // progress lokal 0–1 di dalam step
       stepProgress: 0,
+
+      // arah scroll: 1 (down) / -1 (up)
       direction: 1,
+
+      // sumber interaksi: scroll / click
       interaction: "scroll",
+
+      // instance ScrollTrigger
       st: null,
 
+      // DATA STEP
       steps: [
         {
           label: "plan",
           title: "The sitemap of the experience",
-          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam urna tempor pulvinar vivamus fringilla lacus nec metus bibendum egestas.",
+          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam.",
           image: {
             desktop: require("@/assets/images/imgi_2_638e3f15b3ed3463ebe6038b_pexels-wendy-wei-14397945.jpg"),
             tablet: require("@/assets/images/imgi_13_638e3f15b3ed3463ebe6038b_pexels-wendy-wei-14397945-p-800.jpg"),
@@ -119,7 +155,7 @@ export default {
         {
           label: "design",
           title: "Time to paint the room walls",
-          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam urna tempor pulvinar vivamus fringilla.",
+          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam urna tempor pulvinar vivamus fringilla lacus nec metus bibendum egestas.",
           image: {
             desktop: require("@/assets/images/imgi_4_638e4092e9575c0f9629ae01_walls.jpg"),
             tablet: require("@/assets/images/imgi_18_638e4092e9575c0f9629ae01_walls-p-800.jpg"),
@@ -130,7 +166,7 @@ export default {
         {
           label: "build",
           title: "Let the code bring it alive",
-          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam.",
+          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam urna tempor pulvinar vivamus fringilla.",
           image: {
             desktop: require("@/assets/images/imgi_6_638e45c467fd8f44a5687f97_pexels-cottonbro-studio-5474032.jpg"),
             tablet: require("@/assets/images/imgi_21_638e45c467fd8f44a5687f97_pexels-cottonbro-studio-5474032-p-800.jpg"),
@@ -143,23 +179,27 @@ export default {
   },
 
   computed: {
+    // pilih image berdasarkan breakpoint
     currentImage() {
       const img = this.steps[this.activeStep].image;
       if (window.innerWidth <= 768) return img.mobile;
       if (window.innerWidth <= 1024) return img.tablet;
       return img.desktop;
     },
+
+    // tidak dipakai (aman dibiarkan)
     currentIcon() {
       this.steps[this.activeStep].icon;
     },
   },
 
   mounted() {
+    // desktop-only behavior
     if (window.innerWidth <= 768) return;
     if (window.innerWidth <= 1024) return;
 
     // ===============================
-    // 1️⃣ BUAT ScrollTrigger
+    // 1️⃣ BUAT SCROLLTRIGGER
     // ===============================
     this.st = ScrollTrigger.create({
       trigger: this.$el,
@@ -167,8 +207,12 @@ export default {
       end: "+=300%",
       scrub: true,
       pin: true,
+
+      // dipanggil setiap scroll update
       onUpdate: (self) => {
         this.updateByScroll(self);
+
+        // kalau lagi klik menu, scroll update diabaikan
         if (this.interaction === "click") return;
       },
     });
@@ -180,18 +224,55 @@ export default {
     // ===============================
     const savedStep = sessionStorage.getItem("wf-step");
     if (savedStep !== null) {
-      this.goToStep(Number(savedStep));
+      this.restoreStep(Number(savedStep));
     }
   },
 
   methods: {
+    restoreStep(index) {
+      if (!this.st) return;
+
+      const y = this.getScrollYForStep(index);
+
+      this.interaction = "restore";
+
+      gsap.to(window, {
+        scrollTo: { y },
+        duration: 1.2,
+        ease: "power3.inOut",
+        onComplete: () => {
+          // balik ke scroll normal
+          this.interaction = "scroll";
+        },
+      });
+
+      // state diselaraskan manual
+      this.activeStep = index;
+      this.stepProgress = 0;
+    },
+
+    getScrollYForStep(index) {
+      const total = this.steps.length;
+      const target = (index + 1) / total - 0.001;
+
+      const st = ScrollTrigger.getAll()[0];
+
+      return st.start + (st.end - st.start) * target;
+    },
+
     // ===============================
     // UPDATE SAAT SCROLL
     // ===============================
     updateByScroll(self) {
       const total = this.steps.length;
+
+      // progress global (0–total)
       const exact = self.progress * total;
+
+      // index step aktif
       const index = Math.min(total - 1, Math.floor(exact));
+
+      // progress lokal di step (0–1)
       const local = exact - index;
 
       this.direction = self.direction;
@@ -204,48 +285,47 @@ export default {
       this.activeStep = index;
       this.stepProgress = local;
 
-      // 🔥 SIMPAN STEP (KUNCI WEBFLOW)
+      // 🔥 simpan step agar refresh tetap di posisi sama
       sessionStorage.setItem("wf-step", index);
 
+      // progress line vertical
       gsap.set(".progress-line .active", {
         height: `${self.progress * 100}%`,
       });
 
+      // zoom image
       gsap.set(this.$refs.mainImage, {
         scale: 1.15 - local * 0.15,
       });
 
+      // scale icon
       gsap.set(this.$refs.icon, {
         scale: 1.25 + local * 0.45,
       });
     },
 
+    // ===============================
+    // SAAT KLIK MENU HEADER
+    // ===============================
     goToStep(index) {
       if (!this.st) return;
 
-      this.interaction = "click"; // 🔒 LOCK DULU
+      // 🔒 lock scroll-trigger update
+      if (this.interaction === "click") return;
 
-      const total = this.steps.length;
-      const target = (index + 1) / total - 0.001;
+      const y = this.getScrollYForStep(index);
 
       this.prevStep = this.activeStep;
       this.direction = index > this.prevStep ? 1 : -1;
       this.activeStep = index;
-
-      // 🔥 reset progress
       this.stepProgress = 0;
 
       gsap.to(window, {
-        scrollTo: {
-          y:
-            ScrollTrigger.getAll()[0].start +
-            (ScrollTrigger.getAll()[0].end - ScrollTrigger.getAll()[0].start) *
-              target,
-        },
+        scrollTo: { y },
         duration: 1.2,
         ease: "power3.inOut",
         onComplete: () => {
-          // 🔓 balik ke scroll mode
+          // 🔓 balik ke mode scroll
           this.interaction = "scroll";
         },
       });
